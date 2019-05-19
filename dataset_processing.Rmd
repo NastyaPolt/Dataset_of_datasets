@@ -1,0 +1,140 @@
+---
+title: "Hm2_"
+output: html_notebook
+---
+##Research of dataset of datasets
+#describe of dataset: 
+
+*Research question:*
+
+*Hypotesis:*
+Amount dowlanded dataset depend on size of dataset
+
+```{r warning=FALSE}
+if (!require(psych)) install.packages('psych')
+if (!require(ggplot2)) install.packages('ggplot2')
+if (!require( dplyr)) install.packages(' dplyr')
+if (require( dplyr)) install.packages ("nortest")
+library(psych)
+library(ggplot2)
+library(dplyr)
+library(nortest)
+download.file("https://www.kaggle.com/jessevent/all-kaggle-datasets", destfile = "kaggle_datasets.csv", mode = 'wb')
+dat<- read.csv("kaggle_datasets.csv")
+```
+
+
+```{r warning=FALSE}
+data <- read.csv("/Users/n/R-Studio/kaggle_datasets.csv")
+
+
+data2$feature <- as.factor(data$featured)
+data2$feature <- recode(
+  data2$feature,
+  '0' = 'with features',
+  '1' = 'without features',
+)
+
+
+
+
+str(data)
+colSums(is.na(data))   # missing values 
+data <- na.omit(data)
+data2 <- select(data, downloads,size, featured, upvotes, discussions,views)
+hist (data$downloads,breaks = seq(0,60000,1000), fill = 'white', color = "aliceblue")
+a = max(data$downloads)
+barplot(data$downloads)
+plot (data$downloads, data$size)
+
+boxplot(views ~ featured, data)
+plot (data$views, data$dowloands)
+
+# check for normality of data - Criteria Lillifors (Shapiro-Wilk test gives an error here, because data is very large)
+lillie.test(data$downloads)
+
+ggplot(data, aes(x = downloads, y =size )) + geom_point(colour = "blue") +
+       xlab("downloads") + 
+       ylab("size")+labs(title= "lalal")
+boxplot(data$views)
+
+
+
+```
+
+```{r}
+# для попытки нормальности убираем оутлайеры, применяем log
+y <- data$views
+x <- data$size
+boxplot(views)
+boxplot(size)
+ind <- which(y %in% boxplot.stats(y)$out)
+vybrosy <- data.frame(x=x[ind], y=y[ind])
+ 
+plot(x,y,col='green', pch=18, ylim=c(0,max(y)))
+ 
+points(vybrosy$x, vybrosy$y, col='red',pch=18)
+ 
+x <- x[-ind]
+y <- y[-ind]
+ 
+plot(x,y,col='purple', pch=16, ylim=c(0,max(y)))
+boxplot(x)
+boxplot(y)
+
+ind2 <- which(x %in% boxplot.stats(x)$out)
+x <- x[-ind2]
+y <- y[-ind2]
+plot(x,y,col='purple', pch=16, ylim=c(0,max(y)))
+
+views <- y
+size <- x
+d<-data.frame(size =x, views=y)
+
+ggplot(d, aes(x = views, y = size)) + geom_point() +
+       stat_smooth() + 
+       xlab("size") + 
+       ylab("views")
+boxplot(data$views)
+
+
+
+```
+```{r}
+cor.test(log(d$views), log(d$size), method = "spearman")
+
+df_numeric  <- data[, c(7,8,11,14)]
+
+pairs(df_numeric)
+
+cor(df_numeric,  method = "spearman")
+
+
+
+
+```
+
+
+```{r}
+data2$featured
+m1<- lm (data2$downloads ~ data2$views+data2$size+data2$upvotes +data2$discussions)
+summary(m1)
+confint(m1)# includes null or not
+
+m2 <- lm (data2$downloads ~ data2$views+data2$upvotes+data2$discussions) #(data$downloads ~ ., data) 
+summary(m2) 
+
+anova(m1,m2)
+
+data2$m1_resid<-m1$resid
+data2$m1_fitted<-m1$fitted
+ggplot(data2, aes(x = m1_fitted, y = m1_resid)) + geom_point() 
+
+hist(m1$resid)
+
+
+ 
+
+    
+```
+
